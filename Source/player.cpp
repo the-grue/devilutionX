@@ -2963,6 +2963,10 @@ void CheckNewPath(int pnum, bool pmWillBeCalled)
 	case ACTION_RATTACKMON:
 	case ACTION_SPELLMON:
 		monster = &Monsters[targetId];
+		if ((monster->_mhitpoints >> 6) <= 0) {
+			player.Stop();
+			return;
+		}
 		if (player.destAction == ACTION_ATTACKMON)
 			MakePlrPath(pnum, monster->position.future, false);
 		break;
@@ -2970,6 +2974,10 @@ void CheckNewPath(int pnum, bool pmWillBeCalled)
 	case ACTION_RATTACKPLR:
 	case ACTION_SPELLPLR:
 		target = &Players[targetId];
+		if ((target->_pHitPoints >> 6) <= 0) {
+			player.Stop();
+			return;
+		}
 		if (player.destAction == ACTION_ATTACKPLR)
 			MakePlrPath(pnum, target->position.future, false);
 		break;
