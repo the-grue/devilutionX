@@ -3634,10 +3634,10 @@ void CheckPlrSpell(bool mouseClick)
 	}
 
 	if (myPlayer._pRSplType == RSPLTYPE_SPELL) {
-		if (!mouseClick || lastRightMouseButtonAction != MouseActionType::Spell_ComplainedAboutMana)
+		if (!mouseClick || lastRightMouseButtonAction != MouseActionType::SpellOutOfMana)
 			myPlayer.Say(HeroSpeech::NotEnoughMana);
 		if (mouseClick)
-			lastRightMouseButtonAction = MouseActionType::Spell_ComplainedAboutMana;
+			lastRightMouseButtonAction = MouseActionType::SpellOutOfMana;
 	}
 }
 

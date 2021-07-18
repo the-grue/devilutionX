@@ -260,11 +260,11 @@ bool LeftMouseCmd(bool bShift)
 				if (CanTalkToMonst(Monsters[pcursmonst])) {
 					NetSendCmdParam1(true, CMD_ATTACKID, pcursmonst);
 				} else {
-					lastLeftMouseButtonAction = MouseActionType::Attack_MonsterTarget;
+					lastLeftMouseButtonAction = MouseActionType::AttackMonsterTarget;
 					NetSendCmdParam1(true, CMD_RATTACKID, pcursmonst);
 				}
 			} else if (pcursplr != -1 && !gbFriendlyMode) {
-				lastLeftMouseButtonAction = MouseActionType::Attack_PlayerTarget;
+				lastLeftMouseButtonAction = MouseActionType::AttackPlayerTarget;
 				NetSendCmdParam1(true, CMD_RATTACKPID, pcursplr);
 			}
 		} else {
@@ -281,10 +281,10 @@ bool LeftMouseCmd(bool bShift)
 					NetSendCmdLoc(MyPlayerId, true, CMD_SATTACKXY, { cursmx, cursmy });
 				}
 			} else if (pcursmonst != -1) {
-				lastLeftMouseButtonAction = MouseActionType::Attack_MonsterTarget;
+				lastLeftMouseButtonAction = MouseActionType::AttackMonsterTarget;
 				NetSendCmdParam1(true, CMD_ATTACKID, pcursmonst);
 			} else if (pcursplr != -1 && !gbFriendlyMode) {
-				lastLeftMouseButtonAction = MouseActionType::Attack_PlayerTarget;
+				lastLeftMouseButtonAction = MouseActionType::AttackPlayerTarget;
 				NetSendCmdParam1(true, CMD_ATTACKPID, pcursplr);
 			}
 		}
