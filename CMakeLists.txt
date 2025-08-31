@@ -320,12 +320,19 @@ if(GPERF)
 endif()
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_EXTENSIONS OFF)
+
+# On some platforms, such as DJGPP,
+# `-std=c++20` defines `__STRICT_ANSI__` which disables
+# all POSIX extensions, so we need to use `-std=gnu++20` instead.
+set(CMAKE_CXX_EXTENSIONS ON)
+
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # for clang-tidy
 set(CMAKE_THREAD_PREFER_PTHREAD ON)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
+if(NOT TARGET_PLATFORM STREQUAL "dos")
+  find_package(Threads REQUIRED)
+endif()
 
 # Dependencies must be included after Platforms.
 include(Dependencies)
@@ -335,6 +342,8 @@ add_subdirectory(Source)
 set(BIN_TARGET devilutionx)
 if(NINTENDO_3DS)
   set(BIN_TARGET ${BIN_TARGET}.elf)
+elseif(TARGET_PLATFORM STREQUAL "dos")
+  set(BIN_TARGET devx)
 endif()
 
 if(ANDROID)
@@ -356,6 +365,14 @@ else()
         COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>>:${CMAKE_STRIP}>
         ARGS $<TARGET_FILE:${BIN_TARGET}>)
     endif()
+endif()
+
+if(TARGET_PLATFORM STREQUAL "dos")
+    # Allow multiple definitions for math stubs in DJGPP
+    set_target_properties(${BIN_TARGET} PROPERTIES
+        LINK_FLAGS "-Wl,--allow-multiple-definition -static"
+    )
+    target_link_libraries(${BIN_TARGET} PRIVATE m)
 endif()
 
 if(NOT UWP_LIB)
