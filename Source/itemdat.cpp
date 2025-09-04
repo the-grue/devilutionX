@@ -6,6 +6,7 @@
 
 #include "itemdat.h"
 
+#include <charconv>
 #include <string_view>
 #include <vector>
 
@@ -242,7 +243,11 @@ tl::expected<item_cursor_graphic, std::string> ParseItemCursorGraphic(std::strin
 	if (value == "DEMON_PLATE_ARMOR") return ICURS_DEMON_PLATE_ARMOR;
 	if (value == "BOVINE") return ICURS_BOVINE;
 	if (value == "") return ICURS_DEFAULT;
-	return tl::make_unexpected("Unknown enum value");
+
+	// also support providing the item cursor icon frame number directly
+	return ParseInt<uint8_t>(value)
+	    .map([](auto numericalValue) { return static_cast<item_cursor_graphic>(numericalValue); })
+	    .map_error([](auto) { return std::string("Unknown enum value"); });
 }
 
 tl::expected<ItemType, std::string> ParseItemType(std::string_view value)
