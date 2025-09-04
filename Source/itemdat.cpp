@@ -6,7 +6,6 @@
 
 #include "itemdat.h"
 
-#include <charconv>
 #include <string_view>
 #include <vector>
 
