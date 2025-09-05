@@ -22,14 +22,20 @@ enum class HeroClass : uint8_t {
 	Bard,
 	Barbarian,
 
-	LAST = Barbarian
+	NUM_MAX_CLASSES = std::numeric_limits<uint8_t>::max(),
+
+	LAST = Barbarian,
 };
 
 struct PlayerData {
 	/* Class Name */
-	const char *className;
-	/* Class Skill */
-	SpellID skill = SpellID::Null;
+	std::string className;
+	/* Class Folder Name */
+	std::string folderName;
+	/* Class Portrait Index */
+	uint8_t portrait;
+	/* Class Inventory UI File */
+	std::string inv;
 };
 
 struct ClassAttributes {
@@ -98,12 +104,7 @@ struct PlayerStartingLoadoutData {
 	/* Initial level of the starting spell */
 	uint8_t spellLevel;
 
-	struct ItemType {
-		_item_indexes diablo;
-		_item_indexes hellfire;
-	};
-
-	std::array<ItemType, 5> items;
+	std::array<_item_indexes, 5> items;
 
 	/* Initial gold amount, up to a single stack (5000 gold) */
 	uint16_t gold;
@@ -111,7 +112,11 @@ struct PlayerStartingLoadoutData {
 
 struct PlayerSpriteData {
 	/* Class Directory Path */
-	const char *classPath;
+	std::string classPath;
+	/* Class letter used in graphic files */
+	char classChar;
+	/* Class TRN file */
+	std::string trn;
 	/* Sprite width: Stand */
 	uint8_t stand;
 	/* Sprite width: Walk */
@@ -192,17 +197,19 @@ struct PlayerAnimData {
 };
 
 /**
- * @brief Attempts to load data values from external files, currently only Experience.tsv is supported.
+ * @brief Attempts to load data values from external files.
  */
+void LoadClassDatFromFile(DataFile &dataFile, const std::string_view filename);
 void LoadPlayerDataFiles();
 
-extern const SfxID herosounds[enum_size<HeroClass>::value][enum_size<HeroSpeech>::value];
+SfxID GetHeroSound(HeroClass clazz, HeroSpeech speech);
 uint32_t GetNextExperienceThresholdForLevel(unsigned level);
 uint8_t GetMaximumCharacterLevel();
+size_t GetNumPlayerClasses();
 const PlayerData &GetPlayerDataForClass(HeroClass clazz);
 const PlayerCombatData &GetPlayerCombatDataForClass(HeroClass clazz);
 const PlayerStartingLoadoutData &GetPlayerStartingLoadoutForClass(HeroClass clazz);
-extern const PlayerSpriteData PlayersSpriteData[];
-extern const PlayerAnimData PlayersAnimData[];
+const PlayerSpriteData &GetPlayerSpriteDataForClass(HeroClass clazz);
+const PlayerAnimData &GetPlayerAnimDataForClass(HeroClass clazz);
 
 } // namespace devilution

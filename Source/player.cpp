@@ -1486,7 +1486,7 @@ PlayerWeaponGraphic GetPlayerWeaponGraphic(player_graphic graphic, PlayerWeaponG
 
 uint16_t GetPlayerSpriteWidth(HeroClass cls, player_graphic graphic, PlayerWeaponGraphic weaponGraphic)
 {
-	const PlayerSpriteData spriteData = PlayersSpriteData[static_cast<size_t>(cls)];
+	const PlayerSpriteData spriteData = GetPlayerSpriteDataForClass(cls);
 
 	switch (graphic) {
 	case player_graphic::Stand:
@@ -1683,7 +1683,7 @@ int Player::GetPositionPathIndex(Point pos)
 
 void Player::Say(HeroSpeech speechId) const
 {
-	const SfxID soundEffect = herosounds[static_cast<size_t>(_pClass)][static_cast<size_t>(speechId)];
+	const SfxID soundEffect = GetHeroSound(_pClass, speechId);
 
 	if (soundEffect == SfxID::None)
 		return;
@@ -1693,7 +1693,7 @@ void Player::Say(HeroSpeech speechId) const
 
 void Player::SaySpecific(HeroSpeech speechId) const
 {
-	const SfxID soundEffect = herosounds[static_cast<size_t>(_pClass)][static_cast<size_t>(speechId)];
+	const SfxID soundEffect = GetHeroSound(_pClass, speechId);
 
 	if (soundEffect == SfxID::None || effect_is_playing(soundEffect))
 		return;
@@ -1704,7 +1704,7 @@ void Player::SaySpecific(HeroSpeech speechId) const
 void Player::Say(HeroSpeech speechId, int delay) const
 {
 	sfxdelay = delay;
-	sfxdnum = herosounds[static_cast<size_t>(_pClass)][static_cast<size_t>(speechId)];
+	sfxdnum = GetHeroSound(_pClass, speechId);
 }
 
 void Player::Stop()
@@ -2048,7 +2048,8 @@ ClxSprite GetPlayerPortraitSprite(Player &player)
 	const HeroClass cls = GetPlayerSpriteClass(player._pClass);
 	const PlayerWeaponGraphic animWeaponId = GetPlayerWeaponGraphic(player_graphic::Stand, static_cast<PlayerWeaponGraphic>(player._pgfxnum & 0xF));
 
-	const char *path = PlayersSpriteData[static_cast<std::size_t>(cls)].classPath;
+	const PlayerSpriteData &spriteData = GetPlayerSpriteDataForClass(cls);
+	const char *path = spriteData.classPath.c_str();
 
 	const char *szCel;
 	if (!inDungeon)
@@ -2064,7 +2065,7 @@ ClxSprite GetPlayerPortraitSprite(Player &player)
 		}
 	}
 
-	char prefix[3] = { CharChar[static_cast<std::size_t>(cls)], ArmourChar[player._pgfxnum >> 4], WepChar[static_cast<std::size_t>(animWeaponId)] };
+	char prefix[3] = { spriteData.classChar, ArmourChar[player._pgfxnum >> 4], WepChar[static_cast<std::size_t>(animWeaponId)] };
 	char pszName[256];
 	*fmt::format_to(pszName, R"(plrgfx\{0}\{1}\{1}{2})", path, std::string_view(prefix, 3), szCel) = 0;
 
@@ -2103,7 +2104,8 @@ void LoadPlrGFX(Player &player, player_graphic graphic)
 	const HeroClass cls = GetPlayerSpriteClass(player._pClass);
 	const PlayerWeaponGraphic animWeaponId = GetPlayerWeaponGraphic(graphic, static_cast<PlayerWeaponGraphic>(player._pgfxnum & 0xF));
 
-	const char *path = PlayersSpriteData[static_cast<std::size_t>(cls)].classPath;
+	const PlayerSpriteData &spriteData = GetPlayerSpriteDataForClass(cls);
+	const char *path = spriteData.classPath.c_str();
 
 	const char *szCel;
 	switch (graphic) {
@@ -2152,7 +2154,7 @@ void LoadPlrGFX(Player &player, player_graphic graphic)
 		app_fatal("PLR:2");
 	}
 
-	char prefix[3] = { CharChar[static_cast<std::size_t>(cls)], ArmourChar[player._pgfxnum >> 4], WepChar[static_cast<std::size_t>(animWeaponId)] };
+	char prefix[3] = { spriteData.classChar, ArmourChar[player._pgfxnum >> 4], WepChar[static_cast<std::size_t>(animWeaponId)] };
 	char pszName[256];
 	*fmt::format_to(pszName, R"(plrgfx\{0}\{1}\{1}{2})", path, std::string_view(prefix, 3), szCel) = 0;
 	const uint16_t animationWidth = GetPlayerSpriteWidth(cls, graphic, animWeaponId);
@@ -2224,7 +2226,7 @@ void NewPlrAnim(Player &player, player_graphic graphic, Direction dir, Animation
 void SetPlrAnims(Player &player)
 {
 	const HeroClass pc = player._pClass;
-	const PlayerAnimData plrAtkAnimData = PlayersAnimData[static_cast<uint8_t>(pc)];
+	const PlayerAnimData &plrAtkAnimData = GetPlayerAnimDataForClass(pc);
 	auto gn = static_cast<PlayerWeaponGraphic>(player._pgfxnum & 0xFU);
 
 	if (leveltype == DTYPE_TOWN) {
