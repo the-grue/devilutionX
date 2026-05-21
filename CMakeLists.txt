@@ -271,7 +271,11 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang" AND NOT PS4)
   if(APPLE)
     add_link_options("$<$<NOT:$<CONFIG:Debug>>:LINKER:-dead_strip>")
   else()
-    add_link_options("$<$<NOT:$<CONFIG:Debug>>:LINKER:--gc-sections,--as-needed>")
+    add_link_options("$<$<NOT:$<CONFIG:Debug>>:LINKER:--gc-sections>")
+    # Emscripten's linker (wasm-ld) does not support --as-needed.
+    if(NOT EMSCRIPTEN)
+      add_link_options("$<$<NOT:$<CONFIG:Debug>>:LINKER:--as-needed>")
+    endif()
   endif()
 endif()
 
@@ -301,7 +305,7 @@ endif()
 
 # Not a genexp because CMake doesn't support it
 # https://gitlab.kitware.com/cmake/cmake/-/issues/20546
-if(NOT DISABLE_LTO)
+if(NOT DISABLE_LTO AND NOT EMSCRIPTEN)
   # LTO if supported:
   include(CheckIPOSupported)
   check_ipo_supported(RESULT is_ipo_supported OUTPUT lto_error)
@@ -369,7 +373,7 @@ else()
     Packaging/windows/devilutionx.rc
     Packaging/apple/LaunchScreen.storyboard)
 
-    if(CMAKE_STRIP AND NOT DEVILUTIONX_DISABLE_STRIP)
+    if(CMAKE_STRIP AND NOT DEVILUTIONX_DISABLE_STRIP AND NOT EMSCRIPTEN)
       add_custom_command(
         TARGET ${BIN_TARGET} POST_BUILD
         COMMAND $<$<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>>:${CMAKE_STRIP}>
@@ -398,7 +402,16 @@ include(Assets)
 include(Mods)
 
 if(EMSCRIPTEN)
-  target_link_options(${BIN_TARGET} PRIVATE --preload-file assets)
+  target_link_options(${BIN_TARGET} PRIVATE
+    --preload-file assets
+    -sFORCE_FILESYSTEM=1
+    -sALLOW_MEMORY_GROWTH=1
+    -sASYNCIFY
+    -lidbfs.js
+    --shell-file ${CMAKE_CURRENT_SOURCE_DIR}/Packaging/emscripten/index.html
+  )
+  # Add JavaScript to load MPQ files from the server directory at runtime
+  target_link_options(${BIN_TARGET} PRIVATE --pre-js ${CMAKE_CURRENT_SOURCE_DIR}/Packaging/emscripten/emscripten_pre.js)
 endif()
 
 if(NOT USE_SDL1 AND NOT UWP_LIB)

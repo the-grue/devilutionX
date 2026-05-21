@@ -48,7 +48,8 @@
 #include "controls/touch/renderers.h"
 #endif
 
-#ifdef __DJGPP__
+// Emscripten: ASYNCIFY does not support unwinding across threads, so loading must happen on the main thread.
+#if defined(__DJGPP__) || defined(__EMSCRIPTEN__)
 #define LOAD_ON_MAIN_THREAD
 #endif
 
