@@ -107,16 +107,17 @@ void Missile::setAnimation(MissileGraphicID animtype)
 
 namespace {
 
-int AddClassHealingBonus(int hp, HeroClass heroClass)
+int AddClassHealingBonus(int hp, HeroClass heroClass, SpellID spellId)
 {
 	switch (heroClass) {
 	case HeroClass::Warrior:
-	case HeroClass::Monk:
 	case HeroClass::Barbarian:
 		return hp * 2;
 	case HeroClass::Rogue:
 	case HeroClass::Bard:
 		return hp + (hp / 2);
+	case HeroClass::Monk:
+		return spellId == SpellID::HealOther ? hp * 3 : hp * 2;
 	default:
 		return hp;
 	}
@@ -891,8 +892,8 @@ DamageRange GetDamageAmt(SpellID spell, int spellLevel)
 	case SpellID::HealOther:
 		/// BUGFIX: healing calculation is unused
 		return {
-			AddClassHealingBonus(myPlayer.getCharacterLevel() + spellLevel + 1, myPlayer._pClass) - 1,
-			AddClassHealingBonus((4 * myPlayer.getCharacterLevel()) + (6 * spellLevel) + 10, myPlayer._pClass) - 1
+			AddClassHealingBonus(myPlayer.getCharacterLevel() + spellLevel + 1, myPlayer._pClass, spell),
+			AddClassHealingBonus((4 * myPlayer.getCharacterLevel()) + (6 * spellLevel) + 10, myPlayer._pClass, spell)
 		};
 	case SpellID::RuneOfLight:
 	case SpellID::Lightning:
